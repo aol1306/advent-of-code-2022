@@ -59,7 +59,7 @@ fn calculate_round_shapes_2<'a>(round: &'a(&'a str, &'a str)) -> (&'a str, &'a s
     lose_table.insert("B", "A");
 
     match round.1 {
-        // lose - choose 
+        // lose - choose losing shape
         "X" => (round.0, lose_table.get(round.0).unwrap()),
         // draw - choose the same shape as the opponent
         "Y" => (round.0, round.0),
