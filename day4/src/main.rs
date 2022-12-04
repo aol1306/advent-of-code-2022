@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 #[derive(Debug)]
 struct AssignmentPair {
     elf1: Assignment,
@@ -63,6 +65,7 @@ impl Assignment {
 fn main() {
     let input = include_str!("input.txt");
 
+    let start = Instant::now();
     let part1 = input
         .lines()
         .map(|line| AssignmentPair::try_from(line).unwrap())
@@ -70,8 +73,9 @@ fn main() {
         .filter(|result| *result)
         .count();
 
-    println!("answer 1: {part1}");
+    println!("answer 1: {part1} {:?}", start.elapsed());
 
+    let start = Instant::now();
     let part2 = input
         .lines()
         .map(|line| AssignmentPair::try_from(line).unwrap())
@@ -79,7 +83,7 @@ fn main() {
         .filter(|result| *result)
         .count();
 
-    println!("answer 2: {part2}");
+    println!("answer 2: {part2} {:?}", start.elapsed());
 }
 
 #[cfg(test)]
