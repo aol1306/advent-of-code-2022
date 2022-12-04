@@ -8,13 +8,11 @@ impl TryFrom<&str> for AssignmentPair {
     type Error = &'static str;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let mut split = value.split(",");
-        let elf1 = split.next().ok_or("invalid input")?;
-        let elf2 = split.next().ok_or("invalid input")?;
+        let vals = value.split(",").collect::<Vec<_>>();
 
         Ok(AssignmentPair {
-            elf1: Assignment::try_from(elf1)?,
-            elf2: Assignment::try_from(elf2)?,
+            elf1: Assignment::try_from(*vals.get(0).ok_or("invalid input")?)?,
+            elf2: Assignment::try_from(*vals.get(1).ok_or("invalid input")?)?,
         })
     }
 }
@@ -39,21 +37,14 @@ impl TryFrom<&str> for Assignment {
     type Error = &'static str;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let mut split = value.split("-");
-        let start = split
-            .next()
-            .ok_or("invalid input")?
-            .parse::<u64>()
-            .map_err(|_| "parse failed")?;
-        let end = split
-            .next()
-            .ok_or("invalid input")?
-            .parse::<u64>()
-            .map_err(|_| "parse failed")?;
+        let vals = value
+            .split("-")
+            .filter_map(|x| x.parse::<u64>().ok())
+            .collect::<Vec<_>>();
 
         Ok(Assignment {
-            start: start,
-            end: end,
+            start: *vals.get(0).ok_or("invalid input")?,
+            end: *vals.get(1).ok_or("invalid input")?,
         })
     }
 }
