@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::time::Instant;
 
 fn check_duplicates(v: &VecDeque<char>) -> bool {
     let mut vec = v.clone();
@@ -32,8 +33,12 @@ fn main() {
     let input = include_str!("input.txt").to_string();
     let input = input.trim();
 
-    println!("answer 1: {}", find_seq_start(&input, 4));
-    println!("answer 2: {}", find_seq_start(&input, 14));
+    let start = Instant::now();
+    // answer 1: 1109 2.082208ms
+    println!("answer 1: {} {:?}", find_seq_start(&input, 4), start.elapsed());
+    let start = Instant::now();
+    // answer 2: 3965 25.02725ms
+    println!("answer 2: {} {:?}", find_seq_start(&input, 14), start.elapsed());
 }
 
 #[cfg(test)]
