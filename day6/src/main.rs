@@ -1,14 +1,15 @@
-use std::collections::VecDeque;
+use std::collections::{VecDeque, HashSet};
 use std::time::Instant;
 
 fn check_duplicates(v: &VecDeque<char>) -> bool {
-    let mut vec = v.clone();
-    let vec = vec.make_contiguous().iter().collect::<Vec<_>>();
-    let mut unique = vec.clone();
-    unique.sort_unstable();
-    unique.dedup();
-
-    unique.len() != vec.len()
+    let mut set = HashSet::new();
+    for c in v {
+        if set.contains(c) {
+            return true;
+        }
+        set.insert(c);
+    }
+    return false
 }
 
 fn find_seq_start(s: &str, contig_count: usize) -> usize {
@@ -34,10 +35,10 @@ fn main() {
     let input = input.trim();
 
     let start = Instant::now();
-    // answer 1: 1109 2.082208ms
+    // answer 1: 1109 2.184041ms
     println!("answer 1: {} {:?}", find_seq_start(&input, 4), start.elapsed());
     let start = Instant::now();
-    // answer 2: 3965 25.02725ms
+    // answer 2: 3965 17.497041ms
     println!("answer 2: {} {:?}", find_seq_start(&input, 14), start.elapsed());
 }
 
