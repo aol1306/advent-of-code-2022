@@ -35,10 +35,10 @@ fn main() {
     let input = input.trim();
 
     let start = Instant::now();
-    // answer 1: 1109 2.184041ms
+    // answer 1: 1109 109µs
     println!("answer 1: {} {:?}", find_seq_start(&input, 4), start.elapsed());
     let start = Instant::now();
-    // answer 2: 3965 17.497041ms
+    // answer 2: 3965 711.875µs
     println!("answer 2: {} {:?}", find_seq_start(&input, 14), start.elapsed());
 }
 
