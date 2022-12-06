@@ -20,7 +20,9 @@ impl TryFrom<&str> for Storage {
             .lines()
             .take(1)
             .map(|x| x.chars().count())
-            .collect::<Vec<_>>()[0]
+            .collect::<Vec<_>>()
+            .get(0)
+            .ok_or("invalid input")?
             + 1)
             / 4;
 
@@ -28,55 +30,93 @@ impl TryFrom<&str> for Storage {
             stacks.push(Stack { crates: vec![] });
         }
 
-        value.lines().rev().skip(1).for_each(|x| {
-            x.chars().skip(1).step_by(4).enumerate().for_each(|x| {
-                if x.1 != ' ' {
-                    let c = Crate { id: x.1 };
-                    stacks[x.0].crates.push(c);
+        for line in value.lines().rev().skip(1) {
+            for ch in line.chars().skip(1).step_by(4).enumerate() {
+                if ch.1 != ' ' {
+                    let c = Crate { id: ch.1 };
+                    stacks.get_mut(ch.0).ok_or("invalid input")?.crates.push(c);
                 }
-            })
-        });
+            }
+        }
 
         Ok(Storage { stacks: stacks })
     }
 }
 
 impl Storage {
-    fn execute_movement_instruction(&mut self, movement_instruction: &str) {
+    fn execute_movement_instruction(
+        &mut self,
+        movement_instruction: &str,
+    ) -> Result<(), &'static str> {
         let caps = RE.captures(movement_instruction).unwrap();
         let count = caps[1].parse::<usize>().unwrap();
         let from = caps[2].parse::<usize>().unwrap() - 1;
         let to = caps[3].parse::<usize>().unwrap() - 1;
 
-        self.move_crates(count, from, to);
+        self.move_crates(count, from, to)?;
+        Ok(())
     }
 
-    fn move_crates(&mut self, count: usize, from: usize, to: usize) {
+    fn move_crates(&mut self, count: usize, from: usize, to: usize) -> Result<(), &'static str> {
         for _ in 0..count {
-            self.move_crate(from, to);
+            self.move_crate(from, to)?;
         }
+        Ok(())
     }
 
-    fn move_crate(&mut self, from: usize, to: usize) {
-        let moved_crate = self.stacks[from].crates.pop().unwrap();
-        self.stacks[to].crates.push(moved_crate);
+    fn move_crate(&mut self, from: usize, to: usize) -> Result<(), &'static str> {
+        let moved_crate = self
+            .stacks
+            .get_mut(from)
+            .ok_or("cannot get stack")?
+            .crates
+            .pop()
+            .unwrap();
+        self.stacks
+            .get_mut(to)
+            .ok_or("cannot get stack")?
+            .crates
+            .push(moved_crate);
+        Ok(())
     }
 
-    fn execute_movement_instruction_9001(&mut self, movement_instruction: &str) {
-        let caps = RE.captures(movement_instruction).unwrap();
+    fn execute_movement_instruction_9001(
+        &mut self,
+        movement_instruction: &str,
+    ) -> Result<(), &'static str> {
+        let caps = RE.captures(movement_instruction).ok_or("regex error")?;
         let count = caps[1].parse::<usize>().unwrap();
         let from = caps[2].parse::<usize>().unwrap() - 1;
         let to = caps[3].parse::<usize>().unwrap() - 1;
 
-        self.move_crates_9001(count, from, to);
+        self.move_crates_9001(count, from, to)?;
+        Ok(())
     }
 
-    fn move_crates_9001(&mut self, count: usize, from: usize, to: usize) {
-        let range = self.stacks[from].crates.len() - count..;
+    fn move_crates_9001(
+        &mut self,
+        count: usize,
+        from: usize,
+        to: usize,
+    ) -> Result<(), &'static str> {
+        let range = self
+            .stacks
+            .get_mut(from)
+            .ok_or("cannot get stack")?
+            .crates
+            .len()
+            - count..;
         // remove from old stack
-        let mut moved_crates = self.stacks[from].crates.drain(range).collect::<Vec<_>>();
+        let mut moved_crates = self
+            .stacks
+            .get_mut(from)
+            .ok_or("cannot get stack")?
+            .crates
+            .drain(range)
+            .collect::<Vec<_>>();
         // add to new stack
         self.stacks[to].crates.append(&mut moved_crates);
+        Ok(())
     }
 
     fn get_top_crates(&self) -> Vec<Crate> {
@@ -114,7 +154,7 @@ fn main() {
     {
         let mut storage = Storage::try_from(storage).unwrap();
         for line in movements.lines() {
-            storage.execute_movement_instruction(line);
+            storage.execute_movement_instruction(line).unwrap();
         }
 
         println!("answer 1: {}", storage.top_crates_pretty());
@@ -123,7 +163,7 @@ fn main() {
     {
         let mut storage = Storage::try_from(storage).unwrap();
         for line in movements.lines() {
-            storage.execute_movement_instruction_9001(line);
+            storage.execute_movement_instruction_9001(line).unwrap();
         }
 
         println!("answer 2: {}", storage.top_crates_pretty());
@@ -165,15 +205,19 @@ mod tests {
     #[test]
     fn test_storage_execute_movement() {
         let mut storage = TEST_STORAGE.clone();
-        storage.execute_movement_instruction("move 2 from 2 to 3");
-        assert_eq!(storage.stacks[2].crates.last().unwrap(), &Crate{id: 'C'});
+        storage
+            .execute_movement_instruction("move 2 from 2 to 3")
+            .unwrap();
+        assert_eq!(storage.stacks[2].crates.last().unwrap(), &Crate { id: 'C' });
     }
 
     #[test]
     fn test_storage_execute_movement_9001() {
         let mut storage = TEST_STORAGE.clone();
-        storage.execute_movement_instruction_9001("move 2 from 1 to 3");
-        assert_eq!(storage.stacks[2].crates.last().unwrap(), &Crate{id: 'N'});
+        storage
+            .execute_movement_instruction_9001("move 2 from 1 to 3")
+            .unwrap();
+        assert_eq!(storage.stacks[2].crates.last().unwrap(), &Crate { id: 'N' });
     }
 
     #[test]
@@ -192,7 +236,7 @@ mod tests {
         {
             let mut storage = Storage::try_from(storage).unwrap();
             for line in movements.lines() {
-                storage.execute_movement_instruction(line);
+                storage.execute_movement_instruction(line).unwrap();
             }
 
             assert_eq!("RLFNRTNFB", storage.top_crates_pretty());
@@ -201,7 +245,7 @@ mod tests {
         {
             let mut storage = Storage::try_from(storage).unwrap();
             for line in movements.lines() {
-                storage.execute_movement_instruction_9001(line);
+                storage.execute_movement_instruction_9001(line).unwrap();
             }
 
             assert_eq!("MHQTLJRLB", storage.top_crates_pretty());
