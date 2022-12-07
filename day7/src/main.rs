@@ -128,9 +128,6 @@ fn main() {
         }
     }
 
-    // println!("{:#?}", filesystem);
-    // println!("{}", filesystem.borrow_mut().get_total_size());
-
     let start = Instant::now();
     println!(
         "answer 1: {} {:?}",
@@ -138,6 +135,19 @@ fn main() {
             .map(|node| node.borrow().get_total_size())
             .filter(|size| size < &100_000)
             .sum::<usize>(),
+        start.elapsed()
+    );
+
+    let start = Instant::now();
+    let free_space_now = 70_000_000 - filesystem.borrow_mut().get_total_size();
+    let required_space = 30_000_000 - free_space_now;
+    println!(
+        "answer 2: {} {:?}",
+        all_dirs(filesystem.clone())
+            .map(|node| node.borrow().get_total_size())
+            .filter(|size| size >= &required_space)
+            .min()
+            .unwrap(),
         start.elapsed()
     );
 }
