@@ -91,9 +91,8 @@ fn main() {
         if RE_LS.is_match(line) {
             // do nothing
         }
-        if RE_LS_DIR.is_match(line) {
-            let cap = RE_LS_DIR.captures(line).unwrap();
-            let name = cap.name("name").map(|name| name.as_str()).unwrap();
+        if let Some(cap) = RE_LS_DIR.captures(line) {
+            let name = cap.name("name").unwrap().as_str();
 
             let new_dir = Node::new(name, 0, Some(current.clone()));
             current
@@ -101,10 +100,9 @@ fn main() {
                 .children
                 .insert(name.to_owned(), Rc::new(RefCell::new(new_dir)));
         }
-        if RE_LS_FILE.is_match(line) {
-            let cap = RE_LS_FILE.captures(line).unwrap();
-            let name = cap.name("name").map(|name| name.as_str()).unwrap();
-            let size = cap.name("size").map(|name| name.as_str()).unwrap();
+        if let Some(cap) = RE_LS_FILE.captures(line) {
+            let name = cap.name("name").unwrap().as_str();
+            let size = cap.name("size").unwrap().as_str();
 
             let new_file = Node::new(name, size.parse().unwrap(), Some(current.clone()));
             current
@@ -112,9 +110,8 @@ fn main() {
                 .children
                 .insert(name.to_owned(), Rc::new(RefCell::new(new_file)));
         }
-        if RE_CD_X.is_match(line) {
-            let cap = RE_CD_X.captures(line).unwrap();
-            let name = cap.name("name").map(|name| name.as_str()).unwrap();
+        if let Some(cap) = RE_CD_X.captures(line) {
+            let name = cap.name("name").unwrap().as_str();
 
             let new_current = current.borrow_mut().children.get(name).unwrap().clone();
             current = new_current;
@@ -128,6 +125,7 @@ fn main() {
         }
     }
 
+    // answer 1: 2031851 50.75µs
     let start = Instant::now();
     println!(
         "answer 1: {} {:?}",
@@ -138,6 +136,7 @@ fn main() {
         start.elapsed()
     );
 
+    // answer 2: 2568781 48.166µs
     let start = Instant::now();
     let free_space_now = 70_000_000 - filesystem.borrow_mut().get_total_size();
     let required_space = 30_000_000 - free_space_now;
