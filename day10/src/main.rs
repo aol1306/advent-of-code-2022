@@ -38,6 +38,10 @@ mod cpu {
             }
         }
 
+        pub fn get_x(&self) -> i32 {
+            self.register_x
+        }
+
         pub fn multi_tick(&mut self, count: usize) {
             for _ in 0..count {
                 self.tick();
@@ -107,9 +111,31 @@ fn part1(input: &str) {
     println!("answer 1: {}", total_strength);
 }
 
+fn part2(input: &str) {
+    let instructions = parse_input(input);
+    let mut cpu = Cpu::new(instructions);
+    let mut sprite_pos;
+
+    println!("answer 2:");
+    for _ in 0..6 {
+        for i in 0..40 {
+            let pixel_pos: i32 = i;
+            cpu.tick();
+            sprite_pos = cpu.get_x();
+            if pixel_pos.abs_diff(sprite_pos) < 2 {
+                print!("#");
+            } else {
+                print!(".");
+            }
+        }
+        println!();
+    }
+}
+
 fn main() {
     let input = include_str!("input.txt");
     part1(input);
+    part2(input);
 }
 
 #[cfg(test)]
