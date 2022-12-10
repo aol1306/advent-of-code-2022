@@ -14,6 +14,21 @@ struct Position {
     y: i32,
 }
 
+#[allow(dead_code)]
+fn visualize(positions: Vec<Position>, grid_size: usize) {
+    let grid_size = grid_size as i32;
+    for i in (-grid_size..grid_size).rev() {
+        for j in -grid_size..grid_size {
+            if positions.iter().any(|p| p.y == j && p.x == i) {
+                print!("#");
+            } else {
+                print!(".");
+            }
+        }
+        println!();
+    }
+}
+
 impl Position {
     fn make_move(&mut self, movement: Movement) {
         match movement.direction {
@@ -55,7 +70,7 @@ impl Position {
         }
 
         // diagonal adjustments
-        if moved_x {
+        if moved_x && !moved_y {
             // need to move up
             if self.y < other.y {
                 self.y += 1;
@@ -65,7 +80,7 @@ impl Position {
                 self.y -= 1;
             }
         }
-        if moved_y {
+        if moved_y && !moved_x {
             // need to move right
             if self.x < other.x {
                 self.x += 1;
@@ -135,10 +150,35 @@ fn part1(movements: Vec<Movement>) -> usize {
     visited_by_tail.len()
 }
 
+fn part2(movements: Vec<Movement>) -> usize {
+    let mut head_position = Position { x: 1, y: 1 };
+    let mut knots: Vec<_> = std::iter::repeat(Position { x: 1, y: 1 }).take(9).collect();
+    let mut visited_by_tail: HashSet<Position> = HashSet::new();
+
+    for movement in movements {
+        // move head
+        head_position.make_move(movement);
+        // follow head with knot 1
+        knots[0].follow_position(&head_position);
+
+        // follow knot n with knot n-1
+        for n in 1..knots.len() {
+            let to_follow = knots[n - 1].clone();
+            knots[n].follow_position(&to_follow);
+        }
+
+        visited_by_tail.insert(knots[8].clone());
+    }
+
+    // visualize(visited_by_tail.clone().into_iter().collect(), 25);
+    visited_by_tail.len()
+}
+
 fn main() {
     let input = include_str!("input.txt");
     let movements = parse_input(input);
-    println!("answer 1: {}", part1(movements));
+    println!("answer 1: {}", part1(movements.clone()));
+    println!("answer 2: {}", part2(movements.clone()));
 }
 
 #[cfg(test)]
@@ -213,5 +253,12 @@ mod tests {
         let mut p = Position { x: 1, y: 1 };
         p.follow_position(&Position { x: 3, y: 0 });
         assert_eq!(p, Position { x: 2, y: 0 });
+    }
+
+    #[test]
+    fn test_part2() {
+        let input = "R 5\nU 8\nL 8\nD 3\nR 17\nD 10\nL 25\nU 20";
+        let movements = parse_input(input);
+        assert_eq!(part2(movements), 36);
     }
 }
