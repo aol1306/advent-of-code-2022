@@ -15,10 +15,6 @@ impl ItemThrow {
     pub fn get_target_monkey(&self) -> usize {
         self.target_monkey
     }
-
-    pub fn get_item(&self) -> Item {
-        self.item
-    }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
