@@ -51,6 +51,10 @@ pub struct Monkey {
 }
 
 impl Monkey {
+    pub fn get_test(&self) -> usize {
+        self.test
+    }
+
     pub fn get_inspect_count(&self) -> usize {
         self.inspect_count
     }
@@ -60,23 +64,23 @@ impl Monkey {
     }
 
     // inspect all owned items. generate ItemThrows
-    pub fn inspect_all_items(&mut self) -> Vec<ItemThrow> {
+    pub fn inspect_all_items<F: Fn(usize) -> usize>(&mut self, f: F) -> Vec<ItemThrow> {
         let mut throws = vec![];
 
         let items = self.items.clone();
         for item in &items {
-            throws.push(self.inspect_item(item));
+            throws.push(self.inspect_item(item, &f));
         }
         self.items.clear();
 
         throws
     }
 
-    fn inspect_item(&mut self, item: &Item) -> ItemThrow {
+    fn inspect_item<F: Fn(usize) -> usize>(&mut self, item: &Item, f: F) -> ItemThrow {
         self.inspect_count += 1;
 
         let worry_level = self.worry_level_on_inspection(item.worry_level);
-        let bored_monkey_worry_level = worry_level / 3;
+        let bored_monkey_worry_level = f(worry_level);
 
         let target_monkey = if bored_monkey_worry_level % self.test == 0 {
             self.action_true
@@ -228,7 +232,7 @@ mod tests {
 
         // item thrown to monkey number 3
         assert_eq!(
-            monkey.inspect_item(&item),
+            monkey.inspect_item(&item, |x| x / 3),
             ItemThrow {
                 item: item_after,
                 target_monkey: 3
