@@ -126,7 +126,7 @@ impl Grid {
             }
         }
 
-        unreachable!()
+        panic!();
     }
 
     pub fn part1(&self) -> usize {
